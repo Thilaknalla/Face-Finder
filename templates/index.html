@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Tracer Pro - DeepFace Recognition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="animated-bg">
+        <div class="bg-shape shape-1"></div>
+        <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+    </div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-top">
+                <div class="logo">
+                    <i class="fas fa-face-smile"></i>
+                    <span>FaceFinder</span>
+                </div>
+                <div class="header-controls">
+                    <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="header-content">
+                <h1>Face Recognition in Videos</h1>
+                <p>Powered by DeepFace AI - Upload a reference image and video to find all moments where your face appears</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="section upload-section" id="upload-section">
+                <div class="section-card">
+                    <h2><i class="fas fa-cloud-upload-alt"></i> Upload Files</h2>
+                    <form id="upload-form" class="form">
+                        <!-- Reference Image -->
+                        <div class="form-group">
+                            <label for="reference" class="form-label">
+                                <i class="fas fa-image"></i> Reference Image
+                            </label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="reference" name="reference" 
+                                       accept="image/*" required hidden>
+                                <label for="reference" class="file-input-label">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span>Click to upload or drag & drop</span>
+                                    <small>Supported: JPG, PNG, GIF, BMP (Clear face required)</small>
+                                </label>
+                                <div class="file-preview" id="reference-preview">
+                                    <span id="reference-name">No file selected</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Video Source Tabs -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-video"></i> Video Source
+                            </label>
+                            <div class="tabs">
+                                <button type="button" class="tab-btn active" data-tab="upload">
+                                    <i class="fas fa-upload"></i> Upload
+                                </button>
+                                <button type="button" class="tab-btn" data-tab="youtube">
+                                    <i class="fab fa-youtube"></i> YouTube
+                                </button>
+                            </div>
+
+                            <div class="tab-content">
+                                <!-- Upload Tab -->
+                                <div id="upload-tab" class="tab-pane active">
+                                    <div class="file-input-wrapper">
+                                        <input type="file" id="video" name="video" 
+                                               accept="video/*" hidden>
+                                        <label for="video" class="file-input-label">
+                                            <i class="fas fa-cloud-upload-alt"></i>
+                                            <span>Click to upload or drag & drop</span>
+                                            <small>Supported: MP4, AVI, MOV, MKV (Max 500MB)</small>
+                                        </label>
+                                        <div class="file-preview" id="video-preview">
+                                            <span id="video-name">No file selected</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- YouTube Tab -->
+                                <div id="youtube-tab" class="tab-pane">
+                                    <div class="input-group">
+                                        <input type="url" id="youtube-url" name="youtube_url" 
+                                               placeholder="https://www.youtube.com/watch?v=..." 
+                                               class="text-input">
+                                        <small>Paste YouTube video URL</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Processing Mode Selection -->
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-sliders-h"></i> Detection Sensitivity
+                            </label>
+                            <select id="sensitivity" name="sensitivity" class="text-input" style="display: block;">
+                                <option value="strict">Strict (High Accuracy)</option>
+                                <option value="balanced" selected>Balanced (Recommended)</option>
+                                <option value="sensitive">Sensitive (More Detections)</option>
+                            </select>
+                            <small>Choose sensitivity level for face matching</small>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <i class="fas fa-search"></i> Find Face in Video
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Processing Section -->
+            <section class="section processing-section" id="processing-section">
+                <div class="section-card">
+                    <div class="processing-content">
+                        <div class="spinner-container">
+                            <div class="spinner"></div>
+                        </div>
+                        <h2>Processing Video</h2>
+                        <p class="processing-status" id="processing-status">
+                            Initializing DeepFace models...
+                        </p>
+                        
+                        <div class="progress-section">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span class="progress-percent" id="progress-percent">0%</span>
+                                <span class="progress-frame" id="progress-frame"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="section results-section" id="results-section">
+                <div class="section-card results-card">
+                    <h2><i class="fas fa-check-circle"></i> Detection Results</h2>
+                    
+                    <div class="results-layout">
+                        <!-- Video Player -->
+                        <div class="video-panel">
+                            <h3>Video Player</h3>
+                            <div class="video-wrapper">
+                                <video id="video-player" controls>
+                                    <source src="" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <div class="video-info">
+                                <span id="current-time">00:00:00</span>
+                                <span id="total-duration">00:00:00</span>
+                            </div>
+                        </div>
+
+                        <!-- Results Sidebar -->
+                        <div class="results-panel">
+                            <h3>Detected Timestamps</h3>
+                            
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="total-detections">0</div>
+                                    <div class="stat-label">Detections</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="avg-confidence">0%</div>
+                                    <div class="stat-label">Avg Confidence</div>
+                                </div>
+                            </div>
+
+                            <div class="timestamps-container">
+                                <div class="timestamps-list" id="timestamps-list"></div>
+                            </div>
+
+                            <button class="btn btn-secondary btn-small" id="export-btn">
+                                <i class="fas fa-download"></i> Export Results
+                            </button>
+                            <button class="btn btn-secondary btn-small" id="back-btn" style="margin-top: 10px;">
+                                <i class="fas fa-arrow-left"></i> Back to Upload
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2026 Thilak's FaceFinder  | Powered by DeepFace AI Technology</p>
+        </footer>
+    </div>
+
+    <!-- Modal for errors -->
+    <div class="modal" id="error-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('error-modal')">&times;</button>
+            <h3>Error</h3>
+            <p id="error-message"></p>
+            <button class="btn btn-primary" onclick="closeModal('error-modal')">Close</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
