@@ -1,0 +1,15 @@
+Flask==2.3.3
+opencv-python==4.8.0.74
+opencv-contrib-python==4.8.0.74
+deepface==0.0.75
+tensorflow==2.13.0
+keras==2.13.0
+Pillow==10.0.0
+numpy==1.24.3
+scipy==1.11.0
+yt-dlp==2023.12.30
+pytube==15.0.0
+youtube-dl==2021.12.17
+requests==2.31.0
+gunicorn==21.2.0
+python-dotenv==1.0.0
